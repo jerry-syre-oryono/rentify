@@ -8,6 +8,9 @@ class Property {
   final String location;
   final List<String> imageIds;
   final List<String> amenities;
+  final String sellerId;
+  final double latitude;
+  final double longitude;
 
   Property({
     required this.id,
@@ -17,6 +20,9 @@ class Property {
     required this.location,
     this.imageIds = const [],
     this.amenities = const [],
+    this.sellerId = '',
+    this.latitude = 0.0,
+    this.longitude = 0.0,
   });
 
   factory Property.fromDocument(Document doc) {
@@ -25,15 +31,6 @@ class Property {
     List<String> parseList(dynamic value) {
       if (value == null) return [];
       if (value is List) return List<String>.from(value);
-      if (value is String) {
-        // Handle case where it's a comma-separated string or single value
-        if (value.startsWith('[') && value.endsWith(']')) {
-          // It looks like a JSON string, but we'll just treat it as a single string for safety 
-          // unless we want to use a JSON decoder.
-          return [value];
-        }
-        return value.isEmpty ? [] : [value];
-      }
       return [];
     }
 
@@ -41,10 +38,13 @@ class Property {
       id: doc.$id,
       name: data['name']?.toString() ?? '',
       description: data['description']?.toString() ?? '',
-      pricePerNight: (data['price_per_night'] ?? 0).toDouble(),
+      pricePerNight: (data['price_per_night'] ?? data['pricePerNight'] ?? 0).toDouble(),
       location: data['location']?.toString() ?? '',
-      imageIds: parseList(data['image_ids']),
+      imageIds: parseList(data['image_ids'] ?? data['imageIds']),
       amenities: parseList(data['amenities']),
+      sellerId: data['sellerId']?.toString() ?? '',
+      latitude: (data['latitude'] ?? 0.0).toDouble(),
+      longitude: (data['longitude'] ?? 0.0).toDouble(),
     );
   }
 
@@ -56,6 +56,9 @@ class Property {
       'location': location,
       'image_ids': imageIds,
       'amenities': amenities,
+      'sellerId': sellerId,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

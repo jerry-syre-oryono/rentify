@@ -22,12 +22,16 @@ class BookingService {
         collectionId: AppConstants.bookingsCollectionId,
         documentId: ID.unique(),
         data: {
-          'user_id': userId,
-          'property_id': propertyId,
+          'userId': userId,
+          'propertyId': propertyId,
+          'checkInDate': checkIn.toIso8601String(),
+          'checkOutDate': checkOut.toIso8601String(),
           'check_in': checkIn.toIso8601String(),
           'check_out': checkOut.toIso8601String(),
+          'totalPrice': totalPrice,
           'total_price': totalPrice,
           'status': 'pending',
+          'bookingStatus': 'pending',
         },
       );
       return Booking.fromDocument(doc);
@@ -43,7 +47,7 @@ class BookingService {
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.bookingsCollectionId,
         queries: [
-          Query.equal('user_id', userId),
+          Query.equal('userId', userId),
           Query.orderDesc('\$createdAt'),
         ],
       );

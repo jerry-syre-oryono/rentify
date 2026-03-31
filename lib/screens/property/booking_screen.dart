@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import '../../models/property_model.dart';
 import '../../models/booking_model.dart';
 import '../../providers/auth_providers.dart';
@@ -29,6 +31,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   double get _totalPrice => _nights * widget.property.pricePerNight;
 
   Future<void> _selectDate(bool isCheckIn) async {
+    HapticFeedback.selectionClick();
     final initialDate = isCheckIn ? _checkIn ?? DateTime.now() : _checkOut ?? DateTime.now().add(const Duration(days: 1));
     final firstDate = isCheckIn ? DateTime.now() : (_checkIn ?? DateTime.now());
     final lastDate = DateTime.now().add(const Duration(days: 365));
@@ -56,6 +59,43 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     }
   }
 
+  Future<void> _showSuccessDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 150,
+              width: 150,
+              child: Lottie.network(
+                'https://lottie.host/8e3d09e3-85f0-4660-8f6b-0539f75d5b7a/VfGfR6Gq0N.json', // New Success Checkmark
+                repeat: false,
+                errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle, size: 80, color: Colors.green),
+              ),
+            ),
+            const Text(
+              'Booking Confirmed!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text('Your stay has been successfully reserved.'),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.go(AppConstants.routeHome),
+                child: const Text('Back to Home'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmBooking() async {
     if (_checkIn == null || _checkOut == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -79,6 +119,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       return;
     }
 
+    HapticFeedback.mediumImpact();
     setState(() => _isBooking = true);
 
     try {
@@ -93,10 +134,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking confirmed! 🎉')),
-        );
-        context.go(AppConstants.routeHome);
+        HapticFeedback.heavyImpact();
+        _showSuccessDialog();
       }
     } catch (e) {
       if (mounted) {

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:appwrite/appwrite.dart';
 import '../utils/constants.dart';
 
@@ -18,8 +19,20 @@ class AppwriteConfig {
     storage = Storage(client);
   }
 
-  // Helper: Get image preview URL
+  // Helper: Get image view URL (using /view instead of /preview to avoid transformation limits on free plan)
   static String getImageUrl(String fileId) {
-    return '${AppConstants.appwriteEndpoint}/storage/buckets/${AppConstants.imagesBucketId}/files/$fileId/preview?project=${AppConstants.appwriteProjectId}';
+    final endpoint = AppConstants.appwriteEndpoint;
+    final project = AppConstants.appwriteProjectId;
+    final bucket = AppConstants.imagesBucketId;
+    
+    return '$endpoint/storage/buckets/$bucket/files/$fileId/view?project=$project';
+  }
+
+  // Alternative using SDK if needed (though the above string is standard)
+  static Future<Uint8List> getImagePreview(String fileId) async {
+    return await storage.getFilePreview(
+      bucketId: AppConstants.imagesBucketId,
+      fileId: fileId,
+    );
   }
 }
