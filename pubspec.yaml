@@ -1,0 +1,35 @@
+name: rentify
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Appwrite & State Management
+  appwrite: ^23.0.0
+  flutter_riverpod: ^3.3.1
+  
+  # Routing
+  go_router: ^17.1.0
+  
+  # UI Helpers
+  cached_network_image: ^3.3.1
+  intl: ^0.20.2
+  fluttertoast: ^9.0.0
+  
+  # Date Picker Enhancement
+  table_calendar: ^3.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
