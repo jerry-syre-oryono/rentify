@@ -57,6 +57,54 @@ class BookingService {
       rethrow;
     }
   }
+
+  Future<List<Booking>> getPropertyBookings(String propertyId) async {
+    try {
+      final response = await databases.listDocuments(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.bookingsCollectionId,
+        queries: [
+          Query.equal('propertyId', propertyId),
+          Query.orderDesc('\$createdAt'),
+        ],
+      );
+      return response.documents.map((doc) => Booking.fromDocument(doc)).toList();
+    } catch (e) {
+      print('Error fetching property bookings: $e');
+      rethrow;
+    }
+  }
+
+  Future<Booking?> getBookingById(String bookingId) async {
+    try {
+      final doc = await databases.getDocument(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.bookingsCollectionId,
+        documentId: bookingId,
+      );
+      return Booking.fromDocument(doc);
+    } catch (e) {
+      print('Error fetching booking by id: $e');
+      return null;
+    }
+  }
+
+  Future<void> updateBookingStatus(String bookingId, String status) async {
+    try {
+      await databases.updateDocument(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.bookingsCollectionId,
+        documentId: bookingId,
+        data: {
+          'status': status,
+          'bookingStatus': status,
+        },
+      );
+    } catch (e) {
+      print('Error updating booking status: $e');
+      rethrow;
+    }
+  }
 }
 
 // Riverpod providers

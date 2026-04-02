@@ -18,6 +18,13 @@ class SellerDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Properties'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () => context.push(AppConstants.routeScanBooking),
+            tooltip: 'Scan Booking QR',
+          ),
+        ],
       ),
       body: sellerId.isEmpty
           ? const Center(child: Text('Please login to view dashboard'))
@@ -57,14 +64,32 @@ class SellerDashboardScreen extends ConsumerWidget {
                   itemCount: properties.length,
                   itemBuilder: (context, index) {
                     final property = properties[index];
-                    return PropertyCard(
-                      property: property,
-                      onTap: () {
-                        context.push('${AppConstants.routePropertyDetails}/${property.id}', extra: property);
-                      },
-                      onEdit: () {
-                        context.push(AppConstants.routeEditProperty, extra: property);
-                      },
+                    return Column(
+                      children: [
+                        PropertyCard(
+                          property: property,
+                          onTap: () {
+                            context.push('${AppConstants.routePropertyDetails}/${property.id}', extra: property);
+                          },
+                          onEdit: () {
+                            context.push(AppConstants.routeEditProperty, extra: property);
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => context.push(AppConstants.routePropertyBookings, extra: property),
+                                icon: const Icon(Icons.list_alt, size: 18),
+                                label: const Text('Manage Bookings'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(),
+                      ],
                     );
                   },
                 );

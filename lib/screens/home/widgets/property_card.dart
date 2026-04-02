@@ -26,95 +26,109 @@ class PropertyCard extends ConsumerWidget {
     final favoritesAsync = ref.watch(favoritesProvider);
     final isFavorite = favoritesAsync.value?.contains(property.id) ?? false;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Property Image with Hero animation
+            // Property Image
             Stack(
               children: [
                 Hero(
                   tag: 'property-image-${property.id}',
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: property.imageIds.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: AppwriteConfig.getImageUrl(property.imageIds.first),
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey[200],
-                              child: const Center(child: CircularProgressIndicator()),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: Colors.grey[200],
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    error.toString(),
-                                    style: const TextStyle(fontSize: 8, color: Colors.red),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 3,
-                                  ),
-                                ],
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: AspectRatio(
+                      aspectRatio: 1.2,
+                      child: property.imageIds.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: AppwriteConfig.getImageUrl(property.imageIds.first),
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey[100],
+                                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                               ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey[100],
+                                child: const Icon(Icons.broken_image_outlined, color: Colors.grey, size: 40),
+                              ),
+                            )
+                          : Container(
+                              color: Colors.grey[100],
+                              child: const Icon(Icons.home_outlined, size: 48, color: Colors.grey),
                             ),
-                          )
-                        : Container(
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.home, size: 40, color: Colors.grey),
-                          ),
+                    ),
                   ),
                 ),
-                // Price Badge
+                // Floating Price
                 Positioned(
-                  top: 12,
-                  right: 12,
+                  bottom: 16,
+                  left: 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Text(
-                      '\$${property.pricePerNight.toStringAsFixed(0)} / night',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '\$${property.pricePerNight.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          ' / night',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 // Favorite Button
                 Positioned(
-                  bottom: 12,
-                  right: 12,
+                  top: 16,
+                  right: 16,
                   child: Material(
                     color: Colors.white.withOpacity(0.9),
                     shape: const CircleBorder(),
                     child: IconButton(
+                      visualDensity: VisualDensity.compact,
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.black,
+                        color: isFavorite ? Colors.red : const Color(0xFF0F172A),
+                        size: 20,
                       ),
                       onPressed: () async {
-                        HapticFeedback.mediumImpact();
+                        HapticFeedback.lightImpact();
                         final userId = ref.read(authNotifierProvider).user?.$id;
                         if (userId == null) return;
 
@@ -129,16 +143,17 @@ class PropertyCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // Edit Button
+                // Edit Button for Sellers
                 if (onEdit != null)
                   Positioned(
-                    top: 12,
-                    left: 12,
+                    top: 16,
+                    left: 16,
                     child: Material(
                       color: Colors.white.withOpacity(0.9),
                       shape: const CircleBorder(),
                       child: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.black),
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.edit_outlined, color: Color(0xFF0F172A), size: 20),
                         onPressed: onEdit,
                       ),
                     ),
@@ -146,30 +161,53 @@ class PropertyCard extends ConsumerWidget {
               ],
             ),
             
-            // Property Details
+            // Property Info
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    property.name,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          property.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '4.8', // Placeholder for rating
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.red[400]),
+                      Icon(Icons.location_on_outlined, size: 16, color: Colors.grey[500]),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           property.location,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 14,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -177,6 +215,27 @@ class PropertyCard extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  // Amenities summary tags (just showing first 2-3)
+                  if (property.amenities.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      children: property.amenities.take(3).map((amenity) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          amenity,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF475569),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )).toList(),
+                    ),
                 ],
               ),
             ),

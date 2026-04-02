@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/booking_model.dart';
 import '../../services/booking_service.dart';
 import '../../providers/auth_providers.dart';
+import '../../utils/constants.dart';
 
 class BookingHistoryScreen extends ConsumerWidget {
   const BookingHistoryScreen({super.key});
@@ -45,43 +47,46 @@ class BookingHistoryScreen extends ConsumerWidget {
                   itemCount: bookings.length,
                   itemBuilder: (context, index) {
                     final booking = bookings[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Booking ID: ${booking.id.substring(0, 8)}...',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                _buildStatusChip(booking.status),
-                              ],
-                            ),
-                            const Divider(),
-                            const SizedBox(height: 8),
-                            _buildInfoRow(
-                              Icons.calendar_today,
-                              'Dates:',
-                              '${DateFormat('MMM dd').format(booking.checkIn)} - ${DateFormat('MMM dd, yyyy').format(booking.checkOut)}',
-                            ),
-                            const SizedBox(height: 8),
-                            _buildInfoRow(
-                              Icons.attach_money,
-                              'Total Price:',
-                              '\$${booking.totalPrice.toStringAsFixed(2)}',
-                            ),
-                            const SizedBox(height: 8),
-                            _buildInfoRow(
-                              Icons.hotel,
-                              'Nights:',
-                              '${booking.nights}',
-                            ),
-                          ],
+                    return InkWell(
+                      onTap: () => context.push(AppConstants.routeBookingDetails, extra: booking),
+                      child: Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Booking ID: ${booking.id.substring(0, 8)}...',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  _buildStatusChip(booking.status),
+                                ],
+                              ),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.calendar_today,
+                                'Dates:',
+                                '${DateFormat('MMM dd').format(booking.checkIn)} - ${DateFormat('MMM dd, yyyy').format(booking.checkOut)}',
+                              ),
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.attach_money,
+                                'Total Price:',
+                                '\$${booking.totalPrice.toStringAsFixed(2)}',
+                              ),
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.hotel,
+                                'Nights:',
+                                '${booking.nights}',
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -112,6 +117,9 @@ class BookingHistoryScreen extends ConsumerWidget {
         break;
       case 'cancelled':
         color = Colors.red;
+        break;
+      case 'checked-in':
+        color = Colors.blue;
         break;
       default:
         color = Colors.orange;

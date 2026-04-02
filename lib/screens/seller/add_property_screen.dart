@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../services/property_service.dart';
 import '../../providers/auth_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddPropertyScreen extends ConsumerStatefulWidget {
   const AddPropertyScreen({super.key});
@@ -136,6 +137,14 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                               userAgentPackageName: 'com.example.rentify',
                             ),
+                            RichAttributionWidget(
+                              attributions: [
+                                TextSourceAttribution(
+                                  'OpenStreetMap contributors',
+                                  onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+                                ),
+                              ],
+                            ),
                             if (_pickedLocation != null)
                               MarkerLayer(
                                 markers: [
@@ -162,7 +171,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       controller: _priceController,
                       decoration: const InputDecoration(labelText: 'Price per Night (\$)', border: OutlineInputBorder()),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        final price = double.tryParse(v);
+                        if (price == null) return 'Enter a valid number';
+                        if (price <= 0) return 'Price must be greater than 0';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

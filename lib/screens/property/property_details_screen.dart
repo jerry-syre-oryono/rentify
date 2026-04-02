@@ -12,6 +12,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rentify/services/review_service.dart';
 import '../../models/review_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PropertyDetailsScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -332,6 +333,14 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
                           TileLayer(
                             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                             userAgentPackageName: 'com.example.rentify',
+                          ),
+                          RichAttributionWidget(
+                            attributions: [
+                              TextSourceAttribution(
+                                'OpenStreetMap contributors',
+                                onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+                              ),
+                            ],
                           ),
                           MarkerLayer(
                             markers: [

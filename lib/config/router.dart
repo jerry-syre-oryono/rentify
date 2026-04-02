@@ -13,7 +13,11 @@ import '../screens/home/profile_screen.dart';
 import '../screens/seller/add_property_screen.dart';
 import '../screens/seller/edit_property_screen.dart';
 import '../screens/seller/seller_dashboard_screen.dart';
+import '../screens/seller/scan_booking_screen.dart';
+import '../screens/seller/property_bookings_screen.dart';
+import '../screens/booking/booking_details_screen.dart';
 import '../models/property_model.dart';
+import '../models/booking_model.dart';
 import '../utils/constants.dart';
 
 // Shell Scaffold with Bottom Navigation
@@ -191,6 +195,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppConstants.routeSellerDashboard,
         builder: (context, state) => const SellerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeBookingDetails,
+        builder: (context, state) {
+          final booking = state.extra as Booking?;
+          if (booking == null) return const Scaffold(body: Center(child: Text('Booking data missing')));
+          return BookingDetailsScreen(booking: booking);
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeScanBooking,
+        builder: (context, state) => const ScanBookingScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routePropertyBookings,
+        builder: (context, state) {
+          final property = state.extra as Property?;
+          if (property == null) return const Scaffold(body: Center(child: Text('Property data missing')));
+          return PropertyBookingsScreen(property: property);
+        },
       ),
     ],
   );

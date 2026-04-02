@@ -22,4 +22,7 @@ class AppConstants {
   static const String routeAddProperty = '/add-property';
   static const String routeEditProperty = '/edit-property';
   static const String routeSellerDashboard = '/seller-dashboard';
+  static const String routeBookingDetails = '/booking-details';
+  static const String routeScanBooking = '/scan-booking';
+  static const String routePropertyBookings = '/property-bookings';
 }
