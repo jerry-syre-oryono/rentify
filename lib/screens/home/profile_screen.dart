@@ -5,6 +5,24 @@ import 'package:go_router/go_router.dart';
 import '../../providers/auth_providers.dart';
 import '../../utils/constants.dart';
 
+import 'package:rentify/screens/home/edit_profile_screen.dart';
+import 'package:rentify/screens/home/security_screen.dart';
+
+class NotificationNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return true; // Default value
+  }
+
+  void toggle() {
+    state = !state;
+  }
+}
+
+final notificationProvider = NotifierProvider<NotificationNotifier, bool>(() {
+  return NotificationNotifier();
+});
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -12,6 +30,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final notificationsEnabled = ref.watch(notificationProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile')),
@@ -59,6 +78,10 @@ class ProfileScreen extends ConsumerWidget {
                     title: 'Edit Profile',
                     onTap: () {
                       HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                      );
                     },
                   ),
                   _buildProfileItem(
@@ -66,13 +89,24 @@ class ProfileScreen extends ConsumerWidget {
                     title: 'Notifications',
                     onTap: () {
                       HapticFeedback.lightImpact();
+                      ref.read(notificationProvider.notifier).toggle();
                     },
+                    trailing: Switch(
+                      value: notificationsEnabled,
+                      onChanged: (value) {
+                        ref.read(notificationProvider.notifier).toggle();
+                      },
+                    ),
                   ),
                   _buildProfileItem(
                     icon: Icons.security,
                     title: 'Security',
                     onTap: () {
                       HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SecurityScreen()),
+                      );
                     },
                   ),
                   const Divider(height: 40),
@@ -114,11 +148,12 @@ class ProfileScreen extends ConsumerWidget {
     required VoidCallback onTap,
     Color? textColor,
     Color? iconColor,
+    Widget? trailing,
   }) {
     return ListTile(
       leading: Icon(icon, color: iconColor ?? const Color(0xFF0066FF)),
       title: Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right, size: 20),
+      trailing: trailing ?? const Icon(Icons.chevron_right, size: 20),
       onTap: onTap,
     );
   }

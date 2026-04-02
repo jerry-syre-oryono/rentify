@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../services/property_service.dart';
 import '../../providers/auth_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rentify/providers/location_providers.dart';
 
 class AddPropertyScreen extends ConsumerStatefulWidget {
   const AddPropertyScreen({super.key});
@@ -29,6 +30,25 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final List<String> _availableAmenities = [
     'WiFi', 'Kitchen', 'Pool', 'Free Parking', 'AC', 'TV', 'Workspace', 'Gym'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final position = await ref.read(locationServiceProvider).getCurrentLocation();
+      setState(() {
+        _pickedLocation = LatLng(position.latitude, position.longitude);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
 
   Future<void> _pickImages() async {
     final ImagePicker picker = ImagePicker();
@@ -116,7 +136,17 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                     ),
                     
                     const SizedBox(height: 24),
-                    const Text('Map Location (Tap to pick)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Map Location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        TextButton.icon(
+                          onPressed: _getCurrentLocation,
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Current Location'),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -124,7 +154,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                         height: 250,
                         child: FlutterMap(
                           options: MapOptions(
-                            initialCenter: const LatLng(40.7128, -74.0060), // Default to NYC
+                            initialCenter: _pickedLocation ?? const LatLng(40.7128, -74.0060), // Default to NYC
                             initialZoom: 13.0,
                             onTap: (tapPosition, point) {
                               setState(() {
@@ -152,7 +182,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                                     point: _pickedLocation!,
                                     width: 40,
                                     height: 40,
-                                    child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                                   ),
                                 ],
                               ),

@@ -106,7 +106,32 @@ class AuthNotifier extends Notifier<AuthState> {
       print('Logout error: $e');
     }
   }
-  
+
+  Future<bool> updateUser({String? name, String? email}) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      final account = ref.read(accountProvider);
+
+      if (name != null) {
+        await account.updateName(name: name);
+      }
+
+      if (email != null) {
+        // Appwrite requires the current password to update the email
+        // This is a placeholder for the actual implementation
+        // You would need to prompt the user for their password
+        // await account.updateEmail(email: email, password: 'current-password');
+      }
+
+      final user = await account.get();
+      state = state.copyWith(isLoading: false, user: user);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   // Check if user is authenticated
   bool get isAuthenticated => state.user != null;
 }

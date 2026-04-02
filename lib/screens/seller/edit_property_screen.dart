@@ -8,6 +8,7 @@ import '../../models/property_model.dart';
 import '../../services/property_service.dart';
 import '../../providers/auth_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rentify/providers/location_providers.dart';
 
 class EditPropertyScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -52,6 +53,19 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
     _priceController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final position = await ref.read(locationServiceProvider).getCurrentLocation();
+      setState(() {
+        _pickedLocation = LatLng(position.latitude, position.longitude);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
   }
 
   Future<void> _pickImages() async {
@@ -142,7 +156,17 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
                     ),
                     
                     const SizedBox(height: 24),
-                    const Text('Map Location (Tap to change)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Map Location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        TextButton.icon(
+                          onPressed: _getCurrentLocation,
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Current Location'),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
