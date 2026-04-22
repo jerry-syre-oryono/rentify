@@ -69,6 +69,8 @@ class PropertyService {
     required String sellerId,
     double latitude = 0.0,
     double longitude = 0.0,
+    String sellerPhone = '',
+    String sellerEmail = '',
   }) async {
     try {
       final doc = await databases.createDocument(
@@ -85,6 +87,8 @@ class PropertyService {
           'sellerId': sellerId,
           'latitude': latitude,
           'longitude': longitude,
+          'seller_phone': sellerPhone,
+          'seller_email': sellerEmail,
         },
       );
       return Property.fromDocument(doc);
@@ -104,6 +108,8 @@ class PropertyService {
     required List<String> amenities,
     double latitude = 0.0,
     double longitude = 0.0,
+    String sellerPhone = '',
+    String sellerEmail = '',
   }) async {
     try {
       final doc = await databases.updateDocument(
@@ -119,6 +125,8 @@ class PropertyService {
           'amenities': amenities,
           'latitude': latitude,
           'longitude': longitude,
+          'seller_phone': sellerPhone,
+          'seller_email': sellerEmail,
         },
       );
       return Property.fromDocument(doc);

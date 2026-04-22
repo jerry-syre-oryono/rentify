@@ -22,9 +22,9 @@ class PropertySkeleton extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 16 / 9,
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
               ),
             ),
@@ -41,7 +41,7 @@ class PropertySkeleton extends StatelessWidget {
                     height: 20,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -54,7 +54,7 @@ class PropertySkeleton extends StatelessWidget {
                     height: 14,
                     width: 150,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

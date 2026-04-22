@@ -4,6 +4,7 @@ class AppConstants {
   static const String appwriteProjectId = '69c7c467000dcf77499e';
   static const String databaseId = '69c7c496001cc7881cd0';
   static const String propertiesCollectionId = 'properties';
+  static const String pinsCollectionId = 'pins';
   static const String bookingsCollectionId = 'bookings';
   static const String favoritesCollectionId = 'favorites';
   static const String reviewsCollectionId = 'reviews';
@@ -25,4 +26,8 @@ class AppConstants {
   static const String routeBookingDetails = '/booking-details';
   static const String routeScanBooking = '/scan-booking';
   static const String routePropertyBookings = '/property-bookings';
+  static const String routeSellerPins = '/seller-pins';
+  static const String routeAddPin = '/add-pin';
+  static const String routeEditPin = '/edit-pin';
+  static const String routePinDetails = '/pin-details';
 }

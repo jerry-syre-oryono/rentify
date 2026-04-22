@@ -2,13 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import '../../models/property_model.dart';
 import '../../services/property_service.dart';
-import '../../providers/auth_providers.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:rentify/providers/location_providers.dart';
 
 class EditPropertyScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -24,10 +19,13 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
   late TextEditingController _locationController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
   late List<String> _selectedAmenities;
   final List<XFile> _newImages = [];
   late List<String> _existingImageIds;
-  LatLng? _pickedLocation;
+  late double _latitude;
+  late double _longitude;
   bool _isLoading = false;
 
   final List<String> _availableAmenities = [
@@ -41,9 +39,12 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
     _descriptionController = TextEditingController(text: widget.property.description);
     _priceController = TextEditingController(text: widget.property.pricePerNight.toString());
     _locationController = TextEditingController(text: widget.property.location);
+    _phoneController = TextEditingController(text: widget.property.sellerPhone);
+    _emailController = TextEditingController(text: widget.property.sellerEmail);
     _selectedAmenities = List.from(widget.property.amenities);
     _existingImageIds = List.from(widget.property.imageIds);
-    _pickedLocation = LatLng(widget.property.latitude, widget.property.longitude);
+    _latitude = widget.property.latitude;
+    _longitude = widget.property.longitude;
   }
 
   @override
@@ -52,20 +53,9 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _locationController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
-  }
-
-  Future<void> _getCurrentLocation() async {
-    try {
-      final position = await ref.read(locationServiceProvider).getCurrentLocation();
-      setState(() {
-        _pickedLocation = LatLng(position.latitude, position.longitude);
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    }
   }
 
   Future<void> _pickImages() async {
@@ -79,9 +69,9 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate() || (_existingImageIds.isEmpty && _newImages.isEmpty) || _pickedLocation == null) {
+    if (!_formKey.currentState!.validate() || (_existingImageIds.isEmpty && _newImages.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields, add images, and pick a location')),
+        const SnackBar(content: Text('Please fill all fields and add at least one image')),
       );
       return;
     }
@@ -106,8 +96,10 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
         location: _locationController.text,
         imageIds: [..._existingImageIds, ...uploadedIds],
         amenities: _selectedAmenities,
-        latitude: _pickedLocation!.latitude,
-        longitude: _pickedLocation!.longitude,
+        latitude: _latitude,
+        longitude: _longitude,
+        sellerPhone: _phoneController.text,
+        sellerEmail: _emailController.text,
       );
 
       if (mounted) {
@@ -156,62 +148,6 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
                     ),
                     
                     const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Map Location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        TextButton.icon(
-                          onPressed: _getCurrentLocation,
-                          icon: const Icon(Icons.my_location),
-                          label: const Text('Current Location'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        height: 250,
-                        child: FlutterMap(
-                          options: MapOptions(
-                            initialCenter: _pickedLocation ?? const LatLng(40.7128, -74.0060),
-                            initialZoom: 13.0,
-                            onTap: (tapPosition, point) {
-                              setState(() {
-                                _pickedLocation = point;
-                              });
-                            },
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.rentify',
-                            ),
-                            RichAttributionWidget(
-                              attributions: [
-                                TextSourceAttribution(
-                                  'OpenStreetMap contributors',
-                                  onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
-                                ),
-                              ],
-                            ),
-                            if (_pickedLocation != null)
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: _pickedLocation!,
-                                    width: 40,
-                                    height: 40,
-                                    child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
                     TextFormField(
                       controller: _priceController,
                       decoration: const InputDecoration(labelText: 'Price per Night (\$)', border: OutlineInputBorder()),
@@ -230,6 +166,27 @@ class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
                       decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
                       maxLines: 3,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    const Text('Contact Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder(), prefixIcon: Icon(Icons.phone)),
+                      keyboardType: TextInputType.phone,
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email Address', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email)),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (!v.contains('@')) return 'Enter a valid email';
+                        return null;
+                      },
                     ),
                     
                     const SizedBox(height: 24),

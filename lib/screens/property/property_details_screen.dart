@@ -3,16 +3,16 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/property_model.dart';
 import '../../utils/constants.dart';
 import '../../config/appwrite_config.dart';
 import '../../providers/auth_providers.dart';
 
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:rentify/services/review_service.dart';
 import '../../models/review_model.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PropertyDetailsScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -33,6 +33,38 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
     _pageController.dispose();
     _commentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _callSeller() async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: widget.property.sellerPhone);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch phone call')),
+        );
+      }
+    }
+  }
+
+  Future<void> _emailSeller() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: widget.property.sellerEmail,
+      queryParameters: {
+        'subject': 'Inquiry about ${widget.property.name}',
+      },
+    );
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open email client')),
+        );
+      }
+    }
   }
 
   Future<void> _showAddReviewDialog() async {
@@ -105,9 +137,9 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            backgroundColor: Colors.white.withOpacity(0.9),
+            backgroundColor: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -116,9 +148,9 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CircleAvatar(
-              backgroundColor: Colors.white.withOpacity(0.9),
+              backgroundColor: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
               child: IconButton(
-                icon: const Icon(Icons.share, color: Colors.black),
+                icon: Icon(Icons.share, color: isDark ? Colors.white : Colors.black),
                 onPressed: () {},
               ),
             ),
@@ -269,6 +301,99 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
                     const SizedBox(height: 24),
                   ],
 
+                  // Contact Seller Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).primaryColor.withOpacity(0.1),
+                          Theme.of(context).primaryColor.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Contact Seller',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        if (property.sellerPhone.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.phone, size: 18),
+                                const SizedBox(width: 12),
+                                Text(
+                                  property.sellerPhone,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white70 : Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (property.sellerEmail.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.email, size: 18),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    property.sellerEmail,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: isDark ? Colors.white70 : Colors.grey[700],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _callSeller,
+                                icon: const Icon(Icons.phone),
+                                label: const Text('Call'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _emailSeller,
+                                icon: const Icon(Icons.email),
+                                label: const Text('Email'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // Reviews Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -331,16 +456,8 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
                         ),
                         children: [
                           TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.example.rentify',
-                          ),
-                          RichAttributionWidget(
-                            attributions: [
-                              TextSourceAttribution(
-                                'OpenStreetMap contributors',
-                                onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
-                              ),
-                            ],
+                            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            subdomains: const ['a', 'b', 'c'],
                           ),
                           MarkerLayer(
                             markers: [
@@ -348,11 +465,7 @@ class _PropertyDetailsScreenState extends ConsumerState<PropertyDetailsScreen> {
                                 point: LatLng(property.latitude, property.longitude),
                                 width: 40,
                                 height: 40,
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.red,
-                                  size: 40,
-                                ),
+                                child: Icon(Icons.location_on, color: Colors.red[700]),
                               ),
                             ],
                           ),

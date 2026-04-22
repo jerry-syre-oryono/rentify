@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_providers.dart';
 import '../../services/property_service.dart';
-import '../../models/property_model.dart';
 import '../../utils/constants.dart';
 import 'widgets/property_card.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -31,18 +30,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final propertiesAsync = ref.watch(propertiesListProvider);
     final authState = ref.watch(authNotifierProvider);
     final userName = authState.user?.name ?? 'Guest';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const RentifyLogo(size: 32),
         centerTitle: false,
-        backgroundColor: const Color(0xFFF8FAFC),
         elevation: 0,
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1E293B)),
+            icon: Icon(Icons.notifications_none_rounded, 
+              color: isDark ? Colors.white : const Color(0xFF1E293B)),
           ),
           const SizedBox(width: 8),
         ],
@@ -60,17 +59,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Hello, $userName! 👋',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Find your next stay',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F172A),
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -85,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -95,7 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search by location or name...',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
                   prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0066FF)),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -117,7 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: const Icon(Icons.tune_rounded, color: Colors.white, size: 18),
                         ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,

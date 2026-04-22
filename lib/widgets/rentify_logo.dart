@@ -14,7 +14,9 @@ class RentifyLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = color ?? const Color(0xFF0066FF);
+    final textColor = color ?? (isDark ? Colors.white : const Color(0xFF1E293B));
     
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -47,7 +49,7 @@ class RentifyLogo extends StatelessWidget {
               fontSize: size * 0.7,
               fontWeight: FontWeight.w900,
               letterSpacing: -1,
-              color: color ?? const Color(0xFF1E293B),
+              color: textColor,
             ),
           ),
         ],

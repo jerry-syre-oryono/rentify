@@ -25,15 +25,16 @@ class PropertyCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final favoritesAsync = ref.watch(favoritesProvider);
     final isFavorite = favoritesAsync.value?.contains(property.id) ?? false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -59,16 +60,16 @@ class PropertyCard extends ConsumerWidget {
                               imageUrl: AppwriteConfig.getImageUrl(property.imageIds.first),
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
-                                color: Colors.grey[100],
+                                color: isDark ? Colors.grey[800] : Colors.grey[100],
                                 child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                               ),
                               errorWidget: (context, url, error) => Container(
-                                color: Colors.grey[100],
+                                color: isDark ? Colors.grey[800] : Colors.grey[100],
                                 child: const Icon(Icons.broken_image_outlined, color: Colors.grey, size: 40),
                               ),
                             )
                           : Container(
-                              color: Colors.grey[100],
+                              color: isDark ? Colors.grey[800] : Colors.grey[100],
                               child: const Icon(Icons.home_outlined, size: 48, color: Colors.grey),
                             ),
                     ),
@@ -81,7 +82,7 @@ class PropertyCard extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -96,8 +97,8 @@ class PropertyCard extends ConsumerWidget {
                       children: [
                         Text(
                           '\$${property.pricePerNight.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            color: Color(0xFF0F172A),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                             fontWeight: FontWeight.w900,
                             fontSize: 18,
                           ),
@@ -105,7 +106,7 @@ class PropertyCard extends ConsumerWidget {
                         Text(
                           ' / night',
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                             fontSize: 12,
                           ),
                         ),
@@ -118,13 +119,13 @@ class PropertyCard extends ConsumerWidget {
                   top: 16,
                   right: 16,
                   child: Material(
-                    color: Colors.white.withOpacity(0.9),
+                    color: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
                     shape: const CircleBorder(),
                     child: IconButton(
                       visualDensity: VisualDensity.compact,
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : const Color(0xFF0F172A),
+                        color: isFavorite ? Colors.red : (isDark ? Colors.white : const Color(0xFF0F172A)),
                         size: 20,
                       ),
                       onPressed: () async {
@@ -149,11 +150,13 @@ class PropertyCard extends ConsumerWidget {
                     top: 16,
                     left: 16,
                     child: Material(
-                      color: Colors.white.withOpacity(0.9),
+                      color: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
                       shape: const CircleBorder(),
                       child: IconButton(
                         visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.edit_outlined, color: Color(0xFF0F172A), size: 20),
+                        icon: Icon(Icons.edit_outlined, 
+                          color: isDark ? Colors.white : const Color(0xFF0F172A), 
+                          size: 20),
                         onPressed: onEdit,
                       ),
                     ),
@@ -173,10 +176,10 @@ class PropertyCard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           property.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -190,7 +193,7 @@ class PropertyCard extends ConsumerWidget {
                             '4.8', // Placeholder for rating
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
+                              color: isDark ? Colors.grey[300] : Colors.grey[800],
                             ),
                           ),
                         ],
@@ -200,13 +203,13 @@ class PropertyCard extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 16, color: Colors.grey[500]),
+                      Icon(Icons.location_on_outlined, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[500]),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           property.location,
                           style: TextStyle(
-                            color: Colors.grey[500],
+                            color: isDark ? Colors.grey[400] : Colors.grey[500],
                             fontSize: 14,
                           ),
                           maxLines: 1,
@@ -223,14 +226,14 @@ class PropertyCard extends ConsumerWidget {
                       children: property.amenities.take(3).map((amenity) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           amenity,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: Color(0xFF475569),
+                            color: isDark ? Colors.grey[300] : const Color(0xFF475569),
                             fontWeight: FontWeight.w500,
                           ),
                         ),

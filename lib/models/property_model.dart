@@ -11,6 +11,8 @@ class Property {
   final String sellerId;
   final double latitude;
   final double longitude;
+  final String sellerPhone;
+  final String sellerEmail;
 
   Property({
     required this.id,
@@ -23,6 +25,8 @@ class Property {
     this.sellerId = '',
     this.latitude = 0.0,
     this.longitude = 0.0,
+    this.sellerPhone = '',
+    this.sellerEmail = '',
   });
 
   factory Property.fromDocument(Document doc) {
@@ -45,6 +49,8 @@ class Property {
       sellerId: data['sellerId']?.toString() ?? '',
       latitude: (data['latitude'] ?? 0.0).toDouble(),
       longitude: (data['longitude'] ?? 0.0).toDouble(),
+      sellerPhone: data['seller_phone']?.toString() ?? data['sellerPhone']?.toString() ?? '',
+      sellerEmail: data['seller_email']?.toString() ?? data['sellerEmail']?.toString() ?? '',
     );
   }
 
@@ -59,6 +65,8 @@ class Property {
       'sellerId': sellerId,
       'latitude': latitude,
       'longitude': longitude,
+      'seller_phone': sellerPhone,
+      'seller_email': sellerEmail,
     };
   }
 }

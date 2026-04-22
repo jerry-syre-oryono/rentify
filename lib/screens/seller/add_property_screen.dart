@@ -6,8 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../services/property_service.dart';
 import '../../providers/auth_providers.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:rentify/providers/location_providers.dart';
+import 'package:geocoding/geocoding.dart';
 
 class AddPropertyScreen extends ConsumerStatefulWidget {
   const AddPropertyScreen({super.key});
@@ -22,10 +22,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _locationController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final List<String> _selectedAmenities = [];
   final List<XFile> _images = [];
   LatLng? _pickedLocation;
   bool _isLoading = false;
+  final MapController _mapController = MapController();
 
   final List<String> _availableAmenities = [
     'WiFi', 'Kitchen', 'Pool', 'Free Parking', 'AC', 'TV', 'Workspace', 'Gym'
@@ -40,13 +43,33 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   Future<void> _getCurrentLocation() async {
     try {
       final position = await ref.read(locationServiceProvider).getCurrentLocation();
+      final newLocation = LatLng(position.latitude, position.longitude);
       setState(() {
-        _pickedLocation = LatLng(position.latitude, position.longitude);
+        _pickedLocation = newLocation;
       });
+      _mapController.move(newLocation, 15);
+      _updateAddress(newLocation);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Location error: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateAddress(LatLng position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        String address = "${place.street}, ${place.locality}, ${place.country}";
+        setState(() {
+          _locationController.text = address;
+        });
+      }
+    } catch (e) {
+      debugPrint("Geocoding error: $e");
     }
   }
 
@@ -88,6 +111,8 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
         sellerId: userId,
         latitude: _pickedLocation!.latitude,
         longitude: _pickedLocation!.longitude,
+        sellerPhone: _phoneController.text,
+        sellerEmail: _emailController.text,
       );
 
       if (mounted) {
@@ -153,27 +178,21 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       child: SizedBox(
                         height: 250,
                         child: FlutterMap(
+                          mapController: _mapController,
                           options: MapOptions(
-                            initialCenter: _pickedLocation ?? const LatLng(40.7128, -74.0060), // Default to NYC
+                            initialCenter: _pickedLocation ?? const LatLng(40.7128, -74.0060),
                             initialZoom: 13.0,
                             onTap: (tapPosition, point) {
                               setState(() {
                                 _pickedLocation = point;
                               });
+                              _updateAddress(point);
                             },
                           ),
                           children: [
                             TileLayer(
-                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.rentify',
-                            ),
-                            RichAttributionWidget(
-                              attributions: [
-                                TextSourceAttribution(
-                                  'OpenStreetMap contributors',
-                                  onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
-                                ),
-                              ],
+                              urlTemplate:  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              subdomains: const ['a', 'b', 'c'],
                             ),
                             if (_pickedLocation != null)
                               MarkerLayer(
@@ -182,7 +201,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                                     point: _pickedLocation!,
                                     width: 40,
                                     height: 40,
-                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                                    child: Icon(Icons.location_on, color: Colors.red[700]),
                                   ),
                                 ],
                               ),
@@ -215,6 +234,27 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
                       maxLines: 3,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    const Text('Contact Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder(), prefixIcon: Icon(Icons.phone)),
+                      keyboardType: TextInputType.phone,
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email Address', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email)),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (!v.contains('@')) return 'Enter a valid email';
+                        return null;
+                      },
                     ),
                     
                     const SizedBox(height: 24),
