@@ -37,11 +37,6 @@ class _ScanBookingScreenState extends ConsumerState<ScanBookingScreen> {
         return;
       }
 
-      if (booking.status.toLowerCase() == 'checked-in') {
-        _showError('This booking is already checked-in.');
-        return;
-      }
-
       if (booking.status.toLowerCase() != 'confirmed') {
         _showError('Booking is not confirmed. Current status: ${booking.status}');
         return;
@@ -93,7 +88,7 @@ class _ScanBookingScreenState extends ConsumerState<ScanBookingScreen> {
 
   Future<void> _confirmCheckIn(String bookingId) async {
     try {
-      await ref.read(bookingServiceProvider).updateBookingStatus(bookingId, 'checked-in');
+      await ref.read(bookingServiceProvider).updateBookingStatus(bookingId, 'confirmed');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Check-in successful!'), backgroundColor: Colors.green),
